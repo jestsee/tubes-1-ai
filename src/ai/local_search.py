@@ -104,14 +104,14 @@ class LocalSearch:
             row = self.getNextOpenRow(board, col)
             # print("GET NEXT OPEN ROW",row)
 
-            temp_board = deepcopy(board) # deep copy
+            temp_state = deepcopy(state) # deep copy
             # temp_board = Board(board.row, board.col)
             # temp_board.board = board.board.copy()
 
-            temp_board.set_piece(row, col, piece)
-            # temp = place(state, n_player, myShape, col)
+            #temp_board.set_piece(row, col, piece)
+            temp = place(temp_state, n_player, myShape, col)
             # print("PLACE",temp)
-            score = self.scorePosition(temp_board, n_player, state)
+            score = self.scorePosition(board, n_player, temp_state)
 
             if score > bestScore:
                 bestScore = score
