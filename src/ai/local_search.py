@@ -17,6 +17,13 @@ from copy import deepcopy
 
 from src.utility import place
 
+#TODO: caranya block serangan lawan?
+#TODO: terapin algo stochastic nya? krn pickBestMove msh pake steepest ascent
+#TODO: cara botnya main masih kayak connect4, 
+    #  hanya ngeluarin bidak yang sama kayak shape dan color dia
+#TODO: modif lagi fungsi heuristiknya
+#TODO: belom nanganin kasus kalo mikirnya lebih dari 3s
+
 class LocalSearch:
     def __init__(self):
         # Default constructor
@@ -161,7 +168,7 @@ class LocalSearch:
         # Score Vertical
         for r in range(self.board.col):
             col_array = npmatrix[:,c] 
-            for r in range(3):
+            for r in range(4):
                 window = col_array[r:r+4]
                 score += self.evaluatePosition(window, state)
         
