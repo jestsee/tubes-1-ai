@@ -123,7 +123,7 @@ class LocalSearch:
             if score > bestScore:
                 bestScore = score
                 bestCol = col
-
+        print(bestScore)
         return bestCol
 
     def scorePosition(self, state:State):
@@ -193,44 +193,51 @@ class LocalSearch:
         myShape = myPlayer.shape
         myColor = myPlayer.color
 
-        # diasumsiin ngitung yang warna DAN shape nya sama
-        myPiece = Piece(myShape, myColor)
-        
-        # print("myPiece")
-        # myPiece.print()
-
-        countAll = self.countPieceandEmpty(window, myPiece)
-
-        # print("COUNT ALL:", countAll)
-
-        count = countAll[0]
-        empty = countAll[1]
-
         # OPPONENT
         n_opp = 1
 
         if self.n_player == 1:
             n_opp = 0
-        
+
         opp = state.players[n_opp]
         oppShape = opp.shape
         oppColor = opp.color
-        oppPiece = Piece(oppShape, oppColor)
 
-        countOppAll = self.countPieceandEmpty(window, oppPiece)
-        countOpp = countOppAll[0]
-        emptyOpp = countOppAll[1]
+        combo1 = Piece(myShape, myColor)
+        combo2 = Piece(myShape, oppColor)
+        combo3 = Piece(oppShape, myColor)
+        combo4 = Piece(oppShape, oppColor)
+        
+        # print("myPiece")
+        # myPiece.print()
 
-        if count == 4:
-            score += 100
-        elif count == 3 and empty == 1:
-            score += 5
-        elif count == 2 and empty == 2:
-            score +=2
-        
-        if countOpp == 3 and emptyOpp == 1:
-            score -= 4
-        
+        allCombo1 = self.countPieceandEmpty(window, combo1)
+        allCombo2 = self.countPieceandEmpty(window, combo2)
+        allCombo3 = self.countPieceandEmpty(window, combo3)
+        allCombo4 = self.countPieceandEmpty(window, combo4)
+
+        # print("COUNT ALL:", countAll)
+
+        countCombo1 = allCombo1[0]        
+        countCombo2 = allCombo2[0]        
+        countCombo3 = allCombo3[0]        
+        countCombo4 = allCombo4[0]        
+
+        if (countCombo1 == 4) or (countCombo1 + countCombo2 == 4) or (countCombo1 + countCombo3 == 4):
+            score += 1000
+        # biar lawan ga menang 
+        elif (countCombo3 + countCombo4 >= 2): # misalnya opp shape nya udh lebih dari 2
+            if(countCombo1 + countCombo2 >= 1): # shapenya beda
+                score += (countCombo3+countCombo4)*50
+            else: # malah menolong (?)
+                score += (countCombo3+countCombo4)*-50
+        elif (countCombo2 + countCombo4 >= 2): # misalnya opp color nya udh lebih dari 2
+            if(countCombo1 + countCombo3 >= 1): # colornya beda
+                score += (countCombo2+countCombo4)*49
+            else: # malah menolong (?)
+                score += (countCombo2+countCombo4)*-49
+        else:
+            return 3*countCombo1 + 2*countCombo2 + countCombo3 + (-3*countCombo4) # ini pure ngasal duluu
         return score
 
     def countPieceandEmpty(self, window, piece:Piece):
@@ -242,4 +249,3 @@ class LocalSearch:
             if(window[i].shape == ShapeConstant.BLANK):
                 empty += 1
         return (count, empty)
-
