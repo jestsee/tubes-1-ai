@@ -42,11 +42,6 @@ class LocalSearch:
         self.myColor = self.state.players[n_player].color
         self.myShape = self.state.players[n_player].shape
 
-        # Nambahin atribut
-        # setattr(self, 'myPlayer', self.state.players[n_player])
-        # setattr(self, 'myShape', self.state.players[n_player].shape)
-        # setattr(self, 'myColor', self.state.players[n_player].color)
-
     def find(self, state: State, n_player: int, thinking_time: float) -> Tuple[str, str]:
         self.setAttribute(state, n_player, thinking_time)
 
@@ -128,9 +123,10 @@ class LocalSearch:
         score = 0
         
         myPlayer = self.myPlayer
+        myShape = myPlayer.shape
+        myColor = myPlayer.color
 
-        ## TODO score center column
-        center_array = []
+        myPiece = Piece(myShape, myColor)
 
         ## tes ngeprint board pake str; WORK
         # print("BOARDDD")
@@ -142,12 +138,13 @@ class LocalSearch:
         # convert jadi numpy array
         npmatrix = np.array(state.board.board)
 
-        # tes ngeprint board pas pake numpy
-        # print("NPMATRIX",list(npmatrix))
+        # Score center column - ngutamain buat isi kolom tengah
+        center_array = npmatrix[:, state.board.col//2]
+        center_count = self.countPieceandEmpty(center_array, myPiece)[0]
+        score += center_count * 3
 
-        ## score horizontal
+        # Score horizontal
         for r in range(self.board.row):
-            
             # get all the piece in the column position for row
             row_array = npmatrix[r,:] 
             # row_array = [Piece(i) for i in row_array ]
@@ -160,6 +157,26 @@ class LocalSearch:
                 # print("WINDOW PLS:", window[0].color, window[0].shape)
 
                 score += self.evaluatePosition(window, state)
+        
+        # Score Vertical
+        for r in range(self.board.col):
+            col_array = npmatrix[:,c] 
+            for r in range(3):
+                window = col_array[r:r+4]
+                score += self.evaluatePosition(window, state)
+        
+        # Score diagonal
+        ## TODO ini work ga ya? wkwkw
+        for r in range (3):
+            for c in range (4):
+                window = [npmatrix[r+i][c+i] for i in range(4)]
+                score += self.evaluatePosition(window, state)
+
+        for r in range (3):
+            for c in range (4):
+                window = [npmatrix[r+3-i][c+i] for i in range(4)]
+                score += self.evaluatePosition(window, state)
+
         return score
 
     def evaluatePosition(self, window, state):
@@ -206,8 +223,6 @@ class LocalSearch:
         
         if countOpp == 3 and emptyOpp == 1:
             score -= 4
-
-        # print("SCORE:",score) # kenapa 0 ya ngab
         
         return score
 
