@@ -221,23 +221,23 @@ class LocalSearch:
         countCombo1 = allCombo1[0]        
         countCombo2 = allCombo2[0]        
         countCombo3 = allCombo3[0]        
-        countCombo4 = allCombo4[0]        
+        countCombo4 = allCombo4[0]    
+        emptyCombo1 = allCombo1[1]        
+        emptyCombo2 = allCombo2[1]        
+        emptyCombo3 = allCombo3[1]        
+        emptyCombo4 = allCombo4[1]    
 
         if (countCombo1 == 4) or (countCombo1 + countCombo2 == 4) or (countCombo1 + countCombo3 == 4):
             score += 1000
         # biar lawan ga menang 
         elif (countCombo3 + countCombo4 >= 2): # misalnya opp shape nya udh lebih dari 2
-            if(countCombo1 + countCombo2 >= 1): # shapenya beda
-                score += (countCombo3+countCombo4)*50
-            else: # malah menolong (?)
-                score += (countCombo3+countCombo4)*-50
+            if(countCombo1 + countCombo2 >= 1):
+                score += ((2*countCombo3+countCombo4)+(countCombo1+countCombo2))*50
         elif (countCombo2 + countCombo4 >= 2): # misalnya opp color nya udh lebih dari 2
-            if(countCombo1 + countCombo3 >= 1): # colornya beda
-                score += (countCombo2+countCombo4)*49
-            else: # malah menolong (?)
-                score += (countCombo2+countCombo4)*-49
+            if (countCombo1 + countCombo3 >= 1):
+                score += ((2*countCombo2+countCombo4)+(countCombo1+countCombo3))*49
         else:
-            return 3*countCombo1 + 2*countCombo2 + countCombo3 + (-3*countCombo4) # ini pure ngasal duluu
+            score += 1 #belom 
         return score
 
     def countPieceandEmpty(self, window, piece:Piece):
