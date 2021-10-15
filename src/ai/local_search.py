@@ -19,19 +19,40 @@ from src.utility import place
 
 class LocalSearch:
     def __init__(self):
-        pass
+        # Default constructor
+        self.state = None
+        self.n_player = -1
+        self.thinking_time = -1
+        self.board = None
+        self.myPlayer = None
+        self.myColor = None
+        self.myShape = None
+    
+    '''PARAMETER INPUT
+    - state, atr: board, players, round (!!)
+    - n_player: player 1 ato 2 (0->player 1, 1->player 2)
+    - thinking_time: 3s'''
 
-    # parameter input:
-    # state, atr: board, players, round (!!)
-    # n_player: player 1 ato 2 (0->player 1, 1->player 2)
-    # thinking_time: 3s
-    def find(self, state: State, n_player: int, thinking_time: float) -> Tuple[str, str]:
+    def setAttribute(self, state: State, n_player: int, thinking_time: float):
+        self.state = state
+        self.n_player = n_player
         self.thinking_time = time() + thinking_time
+        self.board = self.state.board
+        self.myPlayer = self.state.players[n_player]
+        self.myColor = self.state.players[n_player].color
+        self.myShape = self.state.players[n_player].shape
 
-        myPlayer = state.players[n_player]
+        # Nambahin atribut
+        # setattr(self, 'myPlayer', self.state.players[n_player])
+        # setattr(self, 'myShape', self.state.players[n_player].shape)
+        # setattr(self, 'myColor', self.state.players[n_player].color)
+
+    def find(self, state: State, n_player: int, thinking_time: float) -> Tuple[str, str]:
+        self.setAttribute(state, n_player, thinking_time)
+
         # myPiece = piece(myPlayer.shape, myPlayer.color)
-        choosencol = self.pickBestMove(state.board, n_player, state)
-        best_movement = (choosencol, myPlayer.shape)
+        choosencol = self.pickBestMove()
+        best_movement = (choosencol, self.myPlayer.shape)
         
         # buat debug
         print("choosen col:",choosencol)
@@ -45,73 +66,57 @@ class LocalSearch:
 
         return best_movement
 
-    # gimana cara pass info player kesini?
-    # tau kuota masing2 piece darimana? state -> players[n_player]
-
-    # TODO fungsi untuk menentukan nilai heuristik
-
     '''WORK'''
     # fungsi mengecek apakah posisi valid
-    def isValidLocation(self, row, col, board:Board):
-        return board[row,col].shape == ShapeConstant.BLANK
+    def isValidLocation(self, row, col):
+        return self.board[row,col].shape == ShapeConstant.BLANK
 
-    '''DAH WORK'''
+    '''WORK'''
     # fungsi generate semua kolom yang mungkin ditempati -> arr
-    def generateValidLocation(self, board: Board):
-        nrow = board.row
-        ncol = board.col
+    def generateValidLocation(self):
+        nrow = self.board.row
+        ncol = self.board.col
 
         availIdx = []
 
         for col in range(ncol):
             for row in range (nrow-1,-1,-1):
-                if self.isValidLocation(row, col, board):
+                if self.isValidLocation(row, col):
                     availIdx.append([row,col])
                     break
         
         return availIdx
 
-    '''WORK HARUSNYA'''
+    '''WORK'''
     # generate 1 random suksesor --> [row, col]
-    def generateASuccessor(self, board: Board):
-        availSpot = self.generateValidLocation(board)
+    def generateASuccessor(self):
+        availSpot = self.generateValidLocation()
         return random.choice(availSpot)
 
-    # dapetin nilai heuristik dari suatu posisi 
-    def getHeuristicValue(self, row, col, n_player, state: State):
-        myPlayer = state.players[n_player]
-        myShape = myPlayer.shape
-        myColor = myPlayer.color
-
-        # TODO belom kelar
-
-    def pickBestMove(self,board, n_player, state:State):
+    def pickBestMove(self):
         
-        validLocations = self.generateValidLocation(board)
+        validLocations = self.generateValidLocation()
         print("valid loc", validLocations)
-        bestScore = -10000
-        bestCol= self.generateASuccessor(board)[1]
+        bestScore = 0 # 0 instead of -10000
+        bestCol= self.generateASuccessor()[1]
 
-        myPlayer = state.players[n_player]
+        myPlayer = self.myPlayer
         myShape = myPlayer.shape
-        myColor = myPlayer.color
-
-        # misalnya baru cobain warna dulu
-        piece = Piece(myShape, myColor)
 
         for location in validLocations: #[row, col]
             col = location[1]
-            row = self.getNextOpenRow(board, col)
-            # print("GET NEXT OPEN ROW",row)
 
-            temp_state = deepcopy(state) # deep copy
-            # temp_board = Board(board.row, board.col)
-            # temp_board.board = board.board.copy()
+            temp_state = deepcopy(self.state) # deep copy
+            
+            '''sampe sini dah bener harusnya'''
 
-            #temp_board.set_piece(row, col, piece)
-            temp = place(temp_state, n_player, myShape, col)
-            # print("PLACE",temp)
-            score = self.scorePosition(board, n_player, temp_state)
+            isSuc=place(temp_state, self.n_player, myShape, col)
+            score = self.scorePosition(temp_state)
+
+            # print("BOARDDD")
+            # print(temp_state.board)
+            # print("SCORE: ",score)
+            # print("BEST COL - pickBestMove:",bestCol)
 
             if score > bestScore:
                 bestScore = score
@@ -119,59 +124,78 @@ class LocalSearch:
 
         return bestCol
 
-    # ngikut youtube Keith Galli; rename jadi getNextValidRow?
-    # nyari row yang valid berdasarkan col yang sudah ada
-    def getNextOpenRow(self, board:Board, col):
-        for r in range(board.row-1,-1,-1):
-            if self.isValidLocation(r,col,board):
-                return r
-
-    def scorePosition(self, board:Board, n_player, state:State):
+    def scorePosition(self, state:State):
         score = 0
         
-        myPlayer = state.players[n_player]
+        myPlayer = self.myPlayer
 
         ## TODO score center column
         center_array = []
+
+        ## tes ngeprint board pake str; WORK
+        # print("BOARDDD")
+        # state.board.board[5][0].print()
+        # for mat in state.board.board:
+        #     for m in mat:
+        #         m.print()
         
         # convert jadi numpy array
-        npmatrix = np.matrix(board.board)
+        npmatrix = np.array(state.board.board)
+
+        # tes ngeprint board pas pake numpy
+        # print("NPMATRIX",list(npmatrix))
 
         ## score horizontal
-        for r in range(board.row):
-            # get all the piece in the column position for row r
-            row_array = list(npmatrix[r,:])
-            for c in range(board.col-3):
+        for r in range(self.board.row):
+            
+            # get all the piece in the column position for row
+            row_array = npmatrix[r,:] 
+            # row_array = [Piece(i) for i in row_array ]
+            # print("row array:",row_array)
+
+            for c in range(4):
                 window = row_array[c:c+4]
-                score += self.evaluatePosition(window, n_player, state)
+
+                '''WORK'''
+                # print("WINDOW PLS:", window[0].color, window[0].shape)
+
+                score += self.evaluatePosition(window, state)
         return score
 
-    def evaluatePosition(self, window, n_player, state:State):
+    def evaluatePosition(self, window, state):
         score = 0
 
-        # mungkin ini entar diapain gitu biar ga redundan
-        myPlayer = state.players[n_player]
+        myPlayer = self.myPlayer
         myShape = myPlayer.shape
         myColor = myPlayer.color
 
         # diasumsiin ngitung yang warna DAN shape nya sama
         myPiece = Piece(myShape, myColor)
-        count = self.countPieceandEmpty(window, myPiece)[0]
-        empty = self.countPieceandEmpty(window, myPiece)[1]
+        
+        # print("myPiece")
+        # myPiece.print()
 
-        # opponent's
+        countAll = self.countPieceandEmpty(window, myPiece)
+
+        # print("COUNT ALL:", countAll)
+
+        count = countAll[0]
+        empty = countAll[1]
+
+        # OPPONENT
         n_opp = 1
 
-        if n_player == 1:
+        if self.n_player == 1:
             n_opp = 0
         
         opp = state.players[n_opp]
         oppShape = opp.shape
         oppColor = opp.color
         oppPiece = Piece(oppShape, oppColor)
-        countOpp = self.countPieceandEmpty(window, oppPiece)
-        emptyOpp = self.countPieceandEmpty(window, oppPiece)
 
+        countOppAll = self.countPieceandEmpty(window, oppPiece)
+        countOpp = countOppAll[0]
+        emptyOpp = countOppAll[1]
 
         if count == 4:
             score += 100
@@ -182,6 +206,8 @@ class LocalSearch:
         
         if countOpp == 3 and emptyOpp == 1:
             score -= 4
+
+        # print("SCORE:",score) # kenapa 0 ya ngab
         
         return score
 

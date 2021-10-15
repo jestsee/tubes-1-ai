@@ -140,3 +140,7 @@ cython_debug/
 .vscode
 
 *.pkl
+
+# exclude coretanku
+coretan.py
+coretan2.py
