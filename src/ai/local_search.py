@@ -265,15 +265,15 @@ class LocalSearch:
         # satu aja cukup, sisanya fokus yg lain aja, eh tp belom tau sih
         elif (countoppShape==2 and emptyoppShape==2):
             score += 400000000000
-        elif (countoppShape==2 and emptyoppShape==0): # udah ditempatin 2 2 tapi ga terlalu penting(?)
-            score += 199999999999
+        elif (countoppShape==2 and emptyoppShape==0): # kayaknya penting
+            score += 500000000000
         if (countoppColor==3 and emptyoppColor==0):
             score += 799999999999
         elif (countoppColor==2 and emptyoppColor==2):
             score += 399999999999
         # cukup satu aja yg counter
-        elif (countoppColor==2 and emptyoppColor==0): # udah ditempatin 2 2 tapi ga terlalu penting(?)
-            score += 200000000000
+        elif (countoppColor==2 and emptyoppColor==0): # kayaknya penting
+            score += 499999999999
         return score
         
     # kalo misalnya udah mix O sama X dari pihak merah, botnya jadi aneh, kalo O dia oke" aja keknya
