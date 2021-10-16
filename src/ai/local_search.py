@@ -123,7 +123,6 @@ class LocalSearch:
             if score > bestScore:
                 bestScore = score
                 bestCol = col
-        print(bestScore)
         return bestCol
 
     def scorePosition(self, state:State):
@@ -227,17 +226,14 @@ class LocalSearch:
         emptyCombo3 = allCombo3[1]        
         emptyCombo4 = allCombo4[1]    
 
-        if (countCombo1 == 4) or (countCombo1 + countCombo2 == 4) or (countCombo1 + countCombo3 == 4):
-            score += 1000
-        # biar lawan ga menang 
-        elif (countCombo3 + countCombo4 >= 2): # misalnya opp shape nya udh lebih dari 2
-            if(countCombo1 + countCombo2 >= 1):
-                score += ((2*countCombo3+countCombo4)+(countCombo1+countCombo2))*50
-        elif (countCombo2 + countCombo4 >= 2): # misalnya opp color nya udh lebih dari 2
-            if (countCombo1 + countCombo3 >= 1):
-                score += ((2*countCombo2+countCombo4)+(countCombo1+countCombo3))*49
-        else:
-            score += 1 #belom 
+        if (countCombo1 == 4): #or (countCombo1 + countCombo2 == 4) or (countCombo1 + countCombo3 == 4):
+            score += 100
+        elif (countCombo1 == 3 and emptyCombo1 == 1): #or (countCombo1 + countCombo2 == 3) or (countCombo1 + countCombo3 == 3):
+            score += 5
+        elif (countCombo1 == 2 and emptyCombo1 == 2): #or (countCombo1 + countCombo2 == 2) or (countCombo1 + countCombo3 == 2):
+            score += 2
+        if (countCombo4 == 3 and emptyCombo4 == 1): #or (countCombo3 + countCombo4 == 3) or (countCombo2 + countCombo4 == 3):
+            score += -4
         return score
 
     def countPieceandEmpty(self, window, piece:Piece):
