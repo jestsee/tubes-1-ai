@@ -165,9 +165,9 @@ class LocalSearch:
                 score += self.evaluatePosition(window, state)
         
         # Score Vertical
-        for r in range(self.board.col):
+        for c in range(self.board.col):
             col_array = npmatrix[:,c] 
-            for r in range(4):
+            for r in range(3):
                 window = col_array[r:r+4]
                 score += self.evaluatePosition(window, state)
         
