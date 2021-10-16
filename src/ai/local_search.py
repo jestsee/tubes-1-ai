@@ -238,10 +238,12 @@ class LocalSearch:
         if (countmyColor == 4 or countmyShape == 4):
             score += 1000000000000
         # color / shape 3, sisanya kosong
-        # ga sepenting ngalangin enemy, tp liat dulu ntar
+        # ga sepenting ngalangin enemy, tp liat dulu ntar, harusnya sih lebih penting kalo udah mau nyampe 3
+        # ada prioritasnya, lebih baik bikin 2 berurutan punya kita dibanding nganggu 2 urutan musuh(?)
+        # ini generate X biru semua jd belomtau
         elif (countmyShape==3 and emptymyShape==2):  # 1 kosong sama 2 2nya jadi dikali 2
             score += 5
-        elif (emptymyShape==2 and emptymyShape==4):
+        elif (countmyShape==2 and emptymyShape==4):
             score += 3
         elif (countmyColor==3 and emptymyColor==2): 
             score += 4
@@ -263,6 +265,8 @@ class LocalSearch:
         # satu aja cukup, sisanya fokus yg lain aja, eh tp belom tau sih
         elif (countoppShape==2 and emptyoppShape==2):
             score += 400000000000
+        elif (countoppShape==2 and emptyoppShape==0): # udah ditempatin 2 2 tapi ga terlalu penting(?)
+            score += 199999999999
         if (countoppColor==3 and emptyoppColor==0):
             score += 799999999999
         elif (countoppColor==2 and emptyoppColor==2):
@@ -271,6 +275,8 @@ class LocalSearch:
         elif (countoppColor==2 and emptyoppColor==0): # udah ditempatin 2 2 tapi ga terlalu penting(?)
             score += 200000000000
         return score
+        
+    # kalo misalnya udah mix O sama X dari pihak merah, botnya jadi aneh, kalo O dia oke" aja keknya
 
     def countPieceandEmpty(self, window, piece:Piece):
         count = 0
