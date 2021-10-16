@@ -225,15 +225,51 @@ class LocalSearch:
         emptyCombo2 = allCombo2[1]        
         emptyCombo3 = allCombo3[1]        
         emptyCombo4 = allCombo4[1]    
-
-        if (countCombo1 == 4): #or (countCombo1 + countCombo2 == 4) or (countCombo1 + countCombo3 == 4):
-            score += 100
-        elif (countCombo1 == 3 and emptyCombo1 == 1): #or (countCombo1 + countCombo2 == 3) or (countCombo1 + countCombo3 == 3):
+        # ini bisa digabung sebenernya di atas tp nanti aja
+        countmyShape = countCombo1 + countCombo2
+        countmyColor = countCombo1 + countCombo3
+        countoppShape = countCombo3 + countCombo4
+        countoppColor = countCombo2 + countCombo2
+        emptymyShape = emptyCombo1 + emptyCombo2
+        emptymyColor = emptyCombo1 + emptyCombo3
+        emptyoppShape = emptyCombo3 + emptyCombo4
+        emptyoppColor = emptyCombo2 + emptyCombo2
+        # color / shape 4
+        if (countmyColor == 4 or countmyShape == 4):
+            score += 1000000000000
+        # color / shape 3, sisanya kosong
+        # ga sepenting ngalangin enemy, tp liat dulu ntar
+        elif (countmyShape==3 and emptymyShape==2):  # 1 kosong sama 2 2nya jadi dikali 2
             score += 5
-        elif (countCombo1 == 2 and emptyCombo1 == 2): #or (countCombo1 + countCombo2 == 2) or (countCombo1 + countCombo3 == 2):
+        elif (emptymyShape==2 and emptymyShape==4):
+            score += 3
+        elif (countmyColor==3 and emptymyColor==2): 
+            score += 4
+        elif (countmyColor==2 and emptymyColor==4):
             score += 2
-        if (countCombo4 == 3 and emptyCombo4 == 1): #or (countCombo3 + countCombo4 == 3) or (countCombo2 + countCombo4 == 3):
-            score += -4
+        # jangan sampe ada empty pas ada 3!
+        if (countoppShape==3 and emptyoppShape==2):
+            score += -900000000000
+        elif (countoppShape==2 and emptyoppShape==4):
+            score += -500000000000
+        if (countoppColor==3 and emptyoppColor==2):
+            score += -899999999999
+        elif (countoppColor==2 and emptyoppColor==4):
+            score += -499999999999
+        # ngeblocking
+        # jangan sampe ada empty pas ada 3!
+        if (countoppShape==3 and emptyoppShape==0): #ditutup
+            score += 800000000000
+        # satu aja cukup, sisanya fokus yg lain aja, eh tp belom tau sih
+        elif (countoppShape==2 and emptyoppShape==2):
+            score += 400000000000
+        if (countoppColor==3 and emptyoppColor==0):
+            score += 799999999999
+        elif (countoppColor==2 and emptyoppColor==2):
+            score += 399999999999
+        # cukup satu aja yg counter
+        elif (countoppColor==2 and emptyoppColor==0): # udah ditempatin 2 2 tapi ga terlalu penting(?)
+            score += 200000000000
         return score
 
     def countPieceandEmpty(self, window, piece:Piece):
