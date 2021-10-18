@@ -231,14 +231,15 @@ class LocalSearch1:
         # color / shape 4
         if (countmyColor == 4 or countmyShape == 4):
             score += 100000000000000000 # sebanyaknya
+        # ga sepenting ngeblock lawan
         elif (countmyShape==3 and emptymyShape==2):  # 1 kosong sama 2 2nya jadi dikali 2
-            score += 700000000000 # lebih penting daripada ngeblock 2 shape
+            score += 300000000000
         elif (countmyShape==2 and emptymyShape==4):
-            score += 30000000 # ngga sepenting ngeblock lawan
+            score += 20000000
         elif (countmyColor==3 and emptymyColor==2): 
-            score += 40000000 # ngga sepenting ngeblock lawan
+            score += 299999999999
         elif (countmyColor==2 and emptymyColor==4):
-            score += 20000000 # ngga sepenting ngeblock lawan
+            score += 19999999
         # jangan sampe ada empty pas ada 3!
         if (countoppShape==3 and emptyoppShape==2):
             score += -900000000000
