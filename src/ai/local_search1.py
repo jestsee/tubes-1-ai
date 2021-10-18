@@ -193,7 +193,6 @@ class LocalSearch1:
         myShape = myPlayer.shape
         myColor = myPlayer.color
 
-        # OPPONENT
         n_opp = 1
 
         if self.n_player == 1:
@@ -208,15 +207,10 @@ class LocalSearch1:
         combo3 = Piece(oppShape, myColor)
         combo4 = Piece(oppShape, oppColor)
         
-        # print("myPiece")
-        # myPiece.print()
-
         allCombo1 = self.countPieceandEmpty(window, combo1) 
         allCombo2 = self.countPieceandEmpty(window, combo2) # myShape oppColor
         allCombo3 = self.countPieceandEmpty(window, combo3) # oppShape myColor
         allCombo4 = self.countPieceandEmpty(window, combo4)
-
-        # print("COUNT ALL:", countAll)
 
         countCombo1 = allCombo1[0]        
         countCombo2 = allCombo2[0]        
@@ -226,7 +220,6 @@ class LocalSearch1:
         emptyCombo2 = allCombo2[1]        
         emptyCombo3 = allCombo3[1]        
         emptyCombo4 = allCombo4[1]    
-        # ini bisa digabung sebenernya di atas tp nanti aja
         countmyShape = countCombo1 + countCombo2
         countmyColor = countCombo1 + countCombo3
         countoppShape = countCombo3 + countCombo4
@@ -237,19 +230,15 @@ class LocalSearch1:
         emptyoppColor = emptyCombo2 + emptyCombo2
         # color / shape 4
         if (countmyColor == 4 or countmyShape == 4):
-            score += 1000000000000
-        # color / shape 3, sisanya kosong
-        # ga sepenting ngalangin enemy, tp liat dulu ntar, harusnya sih lebih penting kalo udah mau nyampe 3
-        # ada prioritasnya, lebih baik bikin 2 berurutan punya kita dibanding nganggu 2 urutan musuh(?)
-        # ini generate X biru semua jd belomtau
+            score += 100000000000000000 # sebanyaknya
         elif (countmyShape==3 and emptymyShape==2):  # 1 kosong sama 2 2nya jadi dikali 2
-            score += 5
+            score += 700000000000 # lebih penting daripada ngeblock 2 shape
         elif (countmyShape==2 and emptymyShape==4):
-            score += 3
+            score += 30000000 # ngga sepenting ngeblock lawan
         elif (countmyColor==3 and emptymyColor==2): 
-            score += 4
+            score += 40000000 # ngga sepenting ngeblock lawan
         elif (countmyColor==2 and emptymyColor==4):
-            score += 2
+            score += 20000000 # ngga sepenting ngeblock lawan
         # jangan sampe ada empty pas ada 3!
         if (countoppShape==3 and emptyoppShape==2):
             score += -900000000000
