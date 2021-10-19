@@ -72,4 +72,3 @@ if __name__ == "__main__":
     config = Config(row, col, type, player_choice, is_dump, thinking_time)
     game = Game(config)
     game.gameplay()
-

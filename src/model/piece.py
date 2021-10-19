@@ -26,7 +26,3 @@ class Piece:
 
     def __eq__(self, o: object) -> bool:
         return self.shape == o.shape and self.color == o.color
-
-    # TODO: tar dihapus
-    def print(self):
-        print(self.shape, self.color)

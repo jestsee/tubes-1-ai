@@ -24,7 +24,7 @@ from src.utility import place
 #TODO: modif lagi fungsi heuristiknya
 #TODO: belom nanganin kasus kalo mikirnya lebih dari 3s
 
-class LocalSearch:
+class LocalSearchGroup37:
     def __init__(self):
         # Default constructor
         self.state = None
@@ -53,11 +53,11 @@ class LocalSearch:
         self.setAttribute(state, n_player, thinking_time)
 
         # myPiece = piece(myPlayer.shape, myPlayer.color)
-        choosencol = self.pickBestMove()
-        best_movement = (choosencol, self.myPlayer.shape)
+        chosencol, chosenShape = self.pickBestMove()
+        best_movement = (chosencol, chosenShape)
         
         # buat debug
-        print("choosen col:",choosencol)
+        print("choosen col & shape:",chosencol, chosenShape)
 
         # best_movement = (random.randint(0, state.board.col), random.choice([ShapeConstant.CROSS, ShapeConstant.CIRCLE]))
 
@@ -103,17 +103,18 @@ class LocalSearch:
         bestCol= self.generateASuccessor()[1]
 
         myPlayer = self.myPlayer
-        myShape = myPlayer.shape
+        shape = myPlayer.shape
 
         for location in validLocations: #[row, col]
             col = location[1]
 
-            temp_state = deepcopy(self.state) # deep copy
+            # temp_state = deepcopy(self.state) # deep copy
             
-            '''sampe sini dah bener harusnya'''
+            '''taroh shape disini'''
+            shape, score = self.whatShapeandCol(col)
 
-            isSuc=place(temp_state, self.n_player, myShape, col)
-            score = self.scorePosition(temp_state)
+            # place(temp_state, self.n_player, myShape, col) # pake shape kita
+            # score = self.scorePosition(temp_state)
 
             # print("BOARDDD")
             # print(temp_state.board)
@@ -123,7 +124,7 @@ class LocalSearch:
             if score > bestScore:
                 bestScore = score
                 bestCol = col
-        return bestCol
+        return bestCol, shape
 
     def scorePosition(self, state:State):
         score = 0
@@ -192,7 +193,6 @@ class LocalSearch:
         myShape = myPlayer.shape
         myColor = myPlayer.color
 
-        # OPPONENT
         n_opp = 1
 
         if self.n_player == 1:
@@ -207,15 +207,10 @@ class LocalSearch:
         combo3 = Piece(oppShape, myColor)
         combo4 = Piece(oppShape, oppColor)
         
-        # print("myPiece")
-        # myPiece.print()
-
-        allCombo1 = self.countPieceandEmpty(window, combo1)
-        allCombo2 = self.countPieceandEmpty(window, combo2)
-        allCombo3 = self.countPieceandEmpty(window, combo3)
+        allCombo1 = self.countPieceandEmpty(window, combo1) 
+        allCombo2 = self.countPieceandEmpty(window, combo2) # myShape oppColor
+        allCombo3 = self.countPieceandEmpty(window, combo3) # oppShape myColor
         allCombo4 = self.countPieceandEmpty(window, combo4)
-
-        # print("COUNT ALL:", countAll)
 
         countCombo1 = allCombo1[0]        
         countCombo2 = allCombo2[0]        
@@ -225,7 +220,6 @@ class LocalSearch:
         emptyCombo2 = allCombo2[1]        
         emptyCombo3 = allCombo3[1]        
         emptyCombo4 = allCombo4[1]    
-        # ini bisa digabung sebenernya di atas tp nanti aja
         countmyShape = countCombo1 + countCombo2
         countmyColor = countCombo1 + countCombo3
         countoppShape = countCombo3 + countCombo4
@@ -236,19 +230,16 @@ class LocalSearch:
         emptyoppColor = emptyCombo2 + emptyCombo2
         # color / shape 4
         if (countmyColor == 4 or countmyShape == 4):
-            score += 1000000000000
-        # color / shape 3, sisanya kosong
-        # ga sepenting ngalangin enemy, tp liat dulu ntar, harusnya sih lebih penting kalo udah mau nyampe 3
-        # ada prioritasnya, lebih baik bikin 2 berurutan punya kita dibanding nganggu 2 urutan musuh(?)
-        # ini generate X biru semua jd belomtau
+            score += 100000000000000000 # sebanyaknya
+        # ga sepenting ngeblock lawan
         elif (countmyShape==3 and emptymyShape==2):  # 1 kosong sama 2 2nya jadi dikali 2
-            score += 5
+            score += 300000000000
         elif (countmyShape==2 and emptymyShape==4):
-            score += 3
+            score += 20000000
         elif (countmyColor==3 and emptymyColor==2): 
-            score += 4
+            score += 299999999999
         elif (countmyColor==2 and emptymyColor==4):
-            score += 2
+            score += 19999999
         # jangan sampe ada empty pas ada 3!
         if (countoppShape==3 and emptyoppShape==2):
             score += -900000000000
@@ -275,6 +266,96 @@ class LocalSearch:
         elif (countoppColor==2 and emptyoppColor==0): # kayaknya penting
             score += 499999999999
         return score
+
+    def evaluatePosition1(self, window, state):
+        score = 0
+        
+        # OPPONENT
+        n_opp = 1
+
+        if self.n_player == 1:
+            n_opp = 0
+
+        opp = state.players[n_opp]
+        oppShape = opp.shape
+        oppColor = opp.color
+        countOppShape = self.countShape(window, oppShape)[0]
+        countOppColor = self.countColor(window, oppColor)[0]
+        shapeOppEmpty = self.countShape(window, oppShape)[1]
+        colorOppEmpty = self.countColor(window, oppColor)[1]
+
+
+        countmyShape = self.countShape(window, self.myShape)[0]
+        countmyColor = self.countColor(window, self.myColor)[0]
+        shapeEmpty = self.countShape(window, self.myShape)[1]
+        colorEmpty = self.countColor(window, self.myColor)[1]
+
+        # 4 shape/color (kondisi menang)
+        if countmyShape == 4 or (countmyColor == 4 and countOppShape !=4):
+            score += 100
+        # 3 shape/color 1 kosong
+        elif (countmyShape == 3 or countmyColor == 3) and (shapeEmpty == 1):
+            score += 5
+        elif (countmyShape == 2 or countmyColor == 2) and (shapeEmpty == 1):
+            score += 2
+        
+        if (countOppShape == 3 or countOppColor == 3) and (shapeOppEmpty == 1):
+            score -= 100
+        
+        return score
+
+    def whatShapeandCol(self, col):
+        # TODO: belom nanganin kasus kalo piece abis
+
+        myShape = self.myShape
+
+        # OPPONENT
+        n_opp = 1
+
+        if self.n_player == 1:
+            n_opp = 0
+
+        opp = self.state.players[n_opp]
+        oppShape = opp.shape
+
+        temp_state1 = deepcopy(self.state) # deep copy
+        temp_state2 = deepcopy(self.state)
+
+        # dahuluin taroh shape lawan
+        place(temp_state1, self.n_player, oppShape, col)
+        score1 = self.scorePosition(temp_state1)
+        
+        # print("score shape lawan:", score1)
+        # print(temp_state1.board)
+        # print("\n")
+
+        place(temp_state2, self.n_player, myShape, col)
+        score2 = self.scorePosition(temp_state2)
+
+        # print("score shape kita:", score2)
+        # print(temp_state2.board)
+        # print("\n")
+        
+        if self.myPlayer.quota[self.myShape] > 0:
+            return myShape, score2
+        else:
+            return oppShape, score1
+
+        '---'
+    
+        '---'
+
+        # kalo shape lawan ga menimbulkan kerugian langsung return
+        # if score1 >= 0:
+        #     return oppShape, score1
+
+        # # kalo rugi, taroh shape kita
+        # else:
+        #     # taroh shape kita
+        #     place(temp_state2, self.n_player, myShape, col)
+        #     score2 = self.scorePosition(temp_state2)
+
+        #     return myShape, score2
         
     # kalo misalnya udah mix O sama X dari pihak merah, botnya jadi aneh, kalo O dia oke" aja keknya
 
@@ -287,3 +368,25 @@ class LocalSearch:
             if(window[i].shape == ShapeConstant.BLANK):
                 empty += 1
         return (count, empty)
+
+    # return empty, count
+    def countColor(self, window, color):
+        count = 0
+        empty = 0
+        for i in range(len(window)):
+            if window[i].color == color:
+                count += 1
+            if(window[i].shape == ShapeConstant.BLANK):
+                empty += 1
+        return count, empty
+
+    # return empty, count
+    def countShape(self, window, shape):
+        count = 0
+        empty = 0
+        for i in range(len(window)):
+            if window[i].shape == shape:
+                count += 1
+            if(window[i].shape == ShapeConstant.BLANK):
+                empty += 1
+        return count, empty
