@@ -121,7 +121,7 @@ class LocalSearchGroup37:
             # print("SCORE: ",score)
             # print("BEST COL - pickBestMove:",bestCol)
 
-            if score > bestScore:
+            if score >= bestScore:
                 bestScore = score
                 bestCol = col
         return bestCol, shape
