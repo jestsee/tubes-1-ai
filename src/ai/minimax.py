@@ -11,7 +11,22 @@ from typing import Tuple, List
 
 class Minimax:
     def __init__(self):
-        pass
+        self.state = None
+        self.n_player = -1
+        self.thinking_time = -1
+        self.board = None
+        self.myPlayer = None
+        self.myColor = None
+        self.myShape = None
+    
+    def setAttribute(self, state: State, n_player: int, thinking_time: float):
+        self.state = state
+        self.n_player = n_player
+        self.thinking_time = time() + thinking_time
+        self.board = self.state.board
+        self.myPlayer = self.state.players[n_player]
+        self.myColor = self.state.players[n_player].color
+        self.myShape = self.state.players[n_player].shape
        
     def isValidLocation(self, row, col):
          return self.board[row,col].shape == ShapeConstant.BLANK
@@ -130,7 +145,7 @@ class Minimax:
         
         return akhir
 
-    def maximizealpha(maxi, availmove, state, depth, a, b, pathhasil):
+    def maximizealpha(self, maxi, availmove, state, depth, a, b, pathhasil):
         bestescore = -10000
         bestepath = None
 
@@ -139,6 +154,8 @@ class Minimax:
             tempatin = place(copystate, self.n_player, move[1], move[0])
             if tempatin != -1:
                 #panggil minimax lagi
+                copyjalur = deepcopy(pathhasil)
+                copyjalur.append(move, tempatin)
                 path, score = self.minimaxpruning(not(maxi), availmove, copystate, depth-1, a, b, copyjalur)
                 if score > bestescore:
                     bestepath = path
@@ -154,7 +171,7 @@ class Minimax:
 
         return bestepath, bestescore
 
-    def minimizebeta(maxi, availmove, state, depth, a, b, pathhasil):
+    def minimizebeta(self, maxi, availmove, state, depth, a, b, pathhasil):
         bestescore = 10000
         bestepath = None
 
@@ -165,7 +182,7 @@ class Minimax:
                 #panggil minimax lagi
                 copyjalur = deepcopy(pathhasil)
                 copyjalur.append(move, tempatin)
-                path, score = self.minimax(not(maxi), availmove, copystate, depth-1, a, b, copyjalur)
+                path, score = self.minimaxpruning(not(maxi), availmove, copystate, depth-1, a, b, copyjalur)
                 if score < bestescore:
                     bestepath = path
                     bestescore = score
@@ -179,9 +196,9 @@ class Minimax:
 
         return bestepath, bestescore
 
-    def minimaxpruning(maxi, availmove, state : State, depth, a, b, pathhasil):
+    def minimaxpruning(self, maxi, availmove, state : State, depth, a, b, pathhasil):
         #list availmove
-        availmove = availablemove(board)
+        availmove = self.availablemove(self.board)
 
         #nilai awal alpha beta
         a = -10000
@@ -207,6 +224,8 @@ class Minimax:
         
     
     def find(self, state: State, n_player: int, thinking_time: float) -> Tuple[str, str]:
+        self.setAttribute(state, n_player, thinking_time)
+        
         self.thinking_time = time() + thinking_time
         self.n_player = n_player
         if n_player == 0:
@@ -216,6 +235,6 @@ class Minimax:
         
         self.best_move = None
 
-        jalur, score = self.minimax()
+        jalur, score = self.minimaxpruning()
 
         return jalur[0][0]

@@ -17,6 +17,7 @@ from copy import deepcopy
 
 from src.utility import place
 
+import math
 #TODO: caranya block serangan lawan?
 #TODO: terapin algo stochastic nya? krn pickBestMove msh pake steepest ascent
 #TODO: cara botnya main masih kayak connect4, 
@@ -24,7 +25,7 @@ from src.utility import place
 #TODO: modif lagi fungsi heuristiknya
 #TODO: belom nanganin kasus kalo mikirnya lebih dari 3s
 
-class LocalSearchGroup37:
+class MinimaxGroup37:
     def __init__(self):
         # Default constructor
         self.state = None
@@ -52,12 +53,11 @@ class LocalSearchGroup37:
     def find(self, state: State, n_player: int, thinking_time: float) -> Tuple[str, str]:
         self.setAttribute(state, n_player, thinking_time)
 
-        # myPiece = piece(myPlayer.shape, myPlayer.color)
-        chosencol, chosenShape = self.pickBestMove()
-        best_movement = (chosencol, chosenShape)
+        # chosencol, chosenShape = self.pickBestMove()
+        # best_movement = (chosencol, chosenShape)
         
         # buat debug
-        print("choosen col & shape:",chosencol, chosenShape)
+        # print("choosen col & shape:",chosencol, chosenShape)
 
         # best_movement = (random.randint(0, state.board.col), random.choice([ShapeConstant.CROSS, ShapeConstant.CIRCLE]))
 
@@ -65,6 +65,10 @@ class LocalSearchGroup37:
         # yang di-return adalah nomor kolom dan bentuk shape
         # Player 1 RED, O
         # Player 2 BLUE, X
+
+        pls = self.minimax(self.state, 4, -math.inf, math.inf, True)
+        print("PLS",pls)
+        best_movement = (pls[0], pls[2])
 
         return best_movement
 
@@ -94,37 +98,6 @@ class LocalSearchGroup37:
     def generateASuccessor(self):
         availSpot = self.generateValidLocation()
         return random.choice(availSpot)
-
-    def pickBestMove(self):
-        
-        validLocations = self.generateValidLocation()
-        print("valid loc", validLocations)
-        bestScore = 0 # 0 instead of -10000
-        bestCol= self.generateASuccessor()[1]
-
-        myPlayer = self.myPlayer
-        shape = myPlayer.shape
-
-        for location in validLocations: #[row, col]
-            col = location[1]
-
-            # temp_state = deepcopy(self.state) # deep copy
-            
-            '''taroh shape disini'''
-            shape, score = self.whatShapeandCol(col)
-
-            # place(temp_state, self.n_player, myShape, col) # pake shape kita
-            # score = self.scorePosition(temp_state)
-
-            # print("BOARDDD")
-            # print(temp_state.board)
-            # print("SCORE: ",score)
-            # print("BEST COL - pickBestMove:",bestCol)
-
-            if score >= bestScore:
-                bestScore = score
-                bestCol = col
-        return bestCol, shape
 
     def scorePosition(self, state:State):
         score = 0
@@ -267,43 +240,6 @@ class LocalSearchGroup37:
             score += 499999999999
         return score
 
-    def evaluatePosition1(self, window, state):
-        score = 0
-        
-        # OPPONENT
-        n_opp = 1
-
-        if self.n_player == 1:
-            n_opp = 0
-
-        opp = state.players[n_opp]
-        oppShape = opp.shape
-        oppColor = opp.color
-        countOppShape = self.countShape(window, oppShape)[0]
-        countOppColor = self.countColor(window, oppColor)[0]
-        shapeOppEmpty = self.countShape(window, oppShape)[1]
-        colorOppEmpty = self.countColor(window, oppColor)[1]
-
-
-        countmyShape = self.countShape(window, self.myShape)[0]
-        countmyColor = self.countColor(window, self.myColor)[0]
-        shapeEmpty = self.countShape(window, self.myShape)[1]
-        colorEmpty = self.countColor(window, self.myColor)[1]
-
-        # 4 shape/color (kondisi menang)
-        if countmyShape == 4 or (countmyColor == 4 and countOppShape !=4):
-            score += 100
-        # 3 shape/color 1 kosong
-        elif (countmyShape == 3 or countmyColor == 3) and (shapeEmpty == 1):
-            score += 5
-        elif (countmyShape == 2 or countmyColor == 2) and (shapeEmpty == 1):
-            score += 2
-        
-        if (countOppShape == 3 or countOppColor == 3) and (shapeOppEmpty == 1):
-            score -= 100
-        
-        return score
-
     def whatShapeandCol(self, col):
         # TODO: belom nanganin kasus kalo piece abis
 
@@ -335,7 +271,6 @@ class LocalSearchGroup37:
         # print("score shape kita:", score2)
         # print(temp_state2.board)
         # print("\n")
-        # print(self.myPlayer.quota[oppShape])
         
         if self.myPlayer.quota[self.myShape] > 0:
             return myShape, score2
@@ -391,3 +326,160 @@ class LocalSearchGroup37:
             if(window[i].shape == ShapeConstant.BLANK):
                 empty += 1
         return count, empty
+
+    def minimax(self, state:State, depth, alpha, beta, maximizingPlayer):
+         # OPPONENT
+        n_opp = 1
+
+        if self.n_player == 1:
+            n_opp = 0
+
+        myPiece = Piece(self.myShape, self.myColor)
+        oppPiece = Piece(self.state.players[n_opp].shape, state.players[n_opp].color)
+
+        myPieceOppShape = Piece(state.players[n_opp].shape, self.myColor)
+        oppPieceMyShape = Piece(self.myShape, state.players[n_opp].color)
+
+        shape = self.whatShape()
+
+        # print("BOARDDD")
+        # print(state.board)
+
+        validLocations = self.generateValidLocation()
+        isTerminal = self.isTerminal(state)
+        if depth == 0 or isTerminal:
+            
+            if isTerminal:
+                if self.winningMove(state, myPiece) or self.winningMove(state, myPieceOppShape):
+                    return (None, 100000000000000, shape) # shapenya return none?
+                elif self.winningMove(state, oppPiece) or self.winningMove(state,oppPieceMyShape):
+                    return (None, -100000000000000, shape)
+                else:
+                    print("MASUK KE GAME OVER")
+                    return (None,0,None)
+            else:
+                # depth is zero
+                return(None, self.scorePosition(state), shape)
+        
+        if maximizingPlayer:
+            # print("MASUK BESAR")
+            value = -math.inf
+            column = self.generateASuccessor()
+
+            for valid in validLocations:
+                col = valid[1]
+                s_copy = deepcopy(state)
+                place(s_copy, self.n_player, shape, col)
+                newScore = self.minimax(s_copy, depth-1, alpha, beta, False)[1]
+                shape = self.whatShape()
+                if newScore > value:
+                    value = newScore
+                    column = col
+                alpha = max(alpha, value)
+                if alpha >= beta:
+                    break
+            return column, value, shape
+        
+        else:
+            # minimizing player
+            # print("MASUK MINI")
+            value = math.inf
+            column = self.generateASuccessor()
+
+            for valid in validLocations:
+                col = valid[1]
+                s_copy = deepcopy(state)
+
+                # check opponent's
+                opponent = state.players[n_opp]
+                oppShape = self.myShape
+                if opponent.quota[opponent.shape] > 0:
+                    oppShape = opponent.shape
+
+                place(s_copy, n_opp, oppShape, col)
+                newScore = self.minimax(s_copy, depth-1, alpha, beta, True)[1]
+                shape = self.whatShape()
+                if newScore < value:
+                    value = newScore
+                    column = col
+                beta = min(beta, value)
+                if alpha >= beta:
+                    break
+            return column, value, shape
+
+
+    def winningMove(self, state:State, piece:Piece):
+        # horizontal
+        for c in range(self.board.col-3):
+            for r in range(self.board.row):
+                # semua shapenya sama
+                if state.board[r,c].shape == piece.shape and state.board[r,c+1].shape == piece.shape and state.board[r,c+2].shape == piece.shape and state.board[r,c+3].shape == piece.shape:
+                    return True
+                
+                # semua warnanya sama
+                if state.board[r,c].color == piece.color and state.board[r,c+1].color == piece.color and state.board[r,c+2].color == piece.color and state.board[r,c+3].color == piece.color:
+                    return True
+        
+        # vertical
+        for c in range(self.board.col):
+            for r in range(self.board.row-3):
+                # semua shapenya sama
+                if state.board[r,c].shape == piece.shape and state.board[r+1,c].shape == piece.shape and state.board[r+2,c].shape == piece.shape and state.board[r+3,c].shape == piece.shape:
+                    return True
+                
+                # semua warnanya sama
+                if state.board[r,c].color == piece.color and state.board[r+1,c].color == piece.color and state.board[r+2,c].color == piece.color and state.board[r+3,c].color == piece.color:
+                    return True
+        
+        # diagonal 1
+        for c in range(self.board.col-3):
+            for r in range(self.board.row-3):
+                # semua shapenya sama
+                if state.board[r,c].shape == piece.shape and state.board[r+1,c+1].shape == piece.shape and state.board[r+2,c+2].shape == piece.shape and state.board[r+3,c+3].shape == piece.shape:
+                    return True
+                
+                # semua warnanya sama
+                if state.board[r,c].color == piece.color and state.board[r+1,c+1].color == piece.color and state.board[r+2,c+2].color == piece.color and state.board[r+3,c+3].color == piece.color:
+                    return True
+        
+        # diagonal 2
+        for c in range(self.board.col-3):
+            for r in range(3, self.board.row):
+                # semua shapenya sama
+                if state.board[r,c].shape == piece.shape and state.board[r-1,c+1].shape == piece.shape and state.board[r-2,c+2].shape == piece.shape and state.board[r-3,c+3].shape == piece.shape:
+                    return True
+                
+                # semua warnanya sama
+                if state.board[r,c].color == piece.color and state.board[r-1,c+1].color == piece.color and state.board[r-2,c+2].color == piece.color and state.board[r-3,c+3].color == piece.color:
+                    return True
+
+    def isTerminal(self, state:State):
+         # OPPONENT
+        n_opp = 1
+
+        if self.n_player == 1:
+            n_opp = 0
+
+        myPiece = Piece(self.myShape, self.myColor)
+        oppPiece = Piece(state.players[n_opp].shape, state.players[n_opp].color)
+
+        myPieceOppShape = Piece(state.players[n_opp].shape, self.myColor)
+        oppPieceMyShape = Piece(self.myShape, state.players[n_opp].color)
+
+        return self.winningMove(state, myPiece) or self.winningMove(state, oppPiece) or self.winningMove(state, myPieceOppShape) or self.winningMove(state, oppPieceMyShape) or len(self.generateValidLocation()) == 0
+    
+    def whatShape(self):
+        # prioritasin shape kita dulu
+        # OPPONENT
+        n_opp = 1
+
+        if self.n_player == 1:
+            n_opp = 0
+
+        opp = self.state.players[n_opp]
+        oppShape = opp.shape
+
+        if self.myPlayer.quota[self.myShape] > 0:
+            return self.myShape
+        else:
+            return oppShape
